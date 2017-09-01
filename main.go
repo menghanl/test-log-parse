@@ -15,6 +15,7 @@ const (
 	passPrefix = "--- PASS: "
 	failPrefix = "--- FAIL: "
 	racePrefix = "WARNING: DATA RACE"
+	undefined  = "undefined:"
 	urlPrefix  = "https://travis-ci.org/grpc/grpc-go/jobs/"
 )
 
@@ -40,6 +41,7 @@ func main() {
 	testStarted := make(map[string]bool)
 	testFailed := make(map[string]int)
 	raceCount := 0
+	undefCount := 0
 
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
@@ -55,6 +57,8 @@ func main() {
 			testFailed[testName]++
 		} else if strings.HasPrefix(scanner.Text(), racePrefix) {
 			raceCount++
+		} else if strings.Contains(scanner.Text(), undefined) {
+			undefCount++
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -83,5 +87,9 @@ func main() {
 
 	if raceCount > 0 {
 		fmt.Println("number of races: ", raceCount)
+	}
+
+	if undefCount > 0 {
+		fmt.Println("number of undefined: ", undefCount)
 	}
 }
